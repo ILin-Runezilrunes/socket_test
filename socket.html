@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+</head>
+  <body>
+    <script>    
+        var socket = io.connect('http://localhost:8001');
+        var alpha=20,beta=20,gamma=20;
+        socket.on('date', function(data){
+            $('#date').text(data.date);
+        });
+        socket.on('passorient', function(data){
+          console.log("4454444");
+        });
+
+        socket.on('callback', function(data){
+          console.log(data.callback);
+            $('#callback').text(data.callback);
+        });
+
+        $(document).ready(function(){
+        $('#text').keypress(function(e){
+          socket.emit('client_data', {
+            'letter': String.fromCharCode(e.charCode)
+          });
+        });
+      });
+      setInterval("dopass()","1000");
+      if(window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', function(event) {
+  var a = document.getElementById('alpha'),
+          b = document.getElementById('beta'),
+          g = document.getElementById('gamma');
+          alpha = event.alpha,
+          beta = event.beta,
+          gamma = event.gamma;
+
+  a.innerHTML = Math.round(alpha);
+  b.innerHTML = Math.round(beta);
+  g.innerHTML = Math.round(gamma);
+
+    }, false);
+}else{
+    document.querySelector('body').innerHTML = '你的瀏覽器不支援喔';
+}
+       function dopass()
+       {
+          var the_data={
+               the_alpha:Math.round(alpha),the_beta:Math.round(beta),the_gamma:Math.round(gamma),
+           };
+           //console.log('do dopass');
+        socket.emit('orient',the_data);
+       }
+    </script>
+    
+    <div id="date"></div>
+    <div id="callback"></div>
+
+    <textarea id="text"></textarea>
+    alpha:<span id="alpha"></span><br/>
+beta:<span id="beta"></span><br/>
+gamma:<span id="gamma"></span><br/>
+
+  </body>
+</html>
