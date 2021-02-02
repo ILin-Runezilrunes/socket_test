@@ -1,4 +1,5 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -6,53 +7,62 @@
 </head>
   <body>
     <script>    
-        var socket = io.connect('http://localhost:8001');
-        var alpha=20,beta=20,gamma=20;
-        socket.on('date', function(data){
-            $('#date').text(data.date);
-        });
-        socket.on('passorient', function(data){
-          console.log("4454444");
-        });
+        let id=999 ;
+        let ws = new WebSocket('ws://211.75.82.191:8679');
+        var alpha,beta,gamma;
+        ws.onopen = () => 
+        {
+            console.log('open connection')
+            ws.send(JSON.stringify({
+                type:'regist',
+                value:'web',
+            }))
+            setInterval("dopass()","1000");
+        }
+        ws.onmessage = function(event) 
+        {
+            console.log(event.data);
+            var msg=JSON.parse(event.data);
+            if(msg.type=='setid')
+            {
+                id=msg.value;
+                console.log('set id'+id);
+            }
+        };
+        ws.onclose = () => 
+        {
+            console.log('close connection');
+        }
+        if(window.DeviceOrientationEvent) {
+		window.addEventListener('deviceorientation', function(event) {
+      var a = document.getElementById('alpha'),
+      		b = document.getElementById('beta'),
+      		g = document.getElementById('gamma');
+      		alpha = event.alpha,
+      		beta = event.beta,
+		  		gamma = event.gamma;
+      
+      a.innerHTML = Math.round(alpha);
+      b.innerHTML = Math.round(beta);
+      g.innerHTML = Math.round(gamma);
+          
+		}, false);
+  }else{
+  	document.querySelector('body').innerHTML = '你的瀏覽器不支援喔';
+  }
 
-        socket.on('callback', function(data){
-          console.log(data.callback);
-            $('#callback').text(data.callback);
-        });
-
-        $(document).ready(function(){
-        $('#text').keypress(function(e){
-          socket.emit('client_data', {
-            'letter': String.fromCharCode(e.charCode)
-          });
-        });
-      });
-      setInterval("dopass()","1000");
-      if(window.DeviceOrientationEvent) {
-    window.addEventListener('deviceorientation', function(event) {
-  var a = document.getElementById('alpha'),
-          b = document.getElementById('beta'),
-          g = document.getElementById('gamma');
-          alpha = event.alpha,
-          beta = event.beta,
-          gamma = event.gamma;
-
-  a.innerHTML = Math.round(alpha);
-  b.innerHTML = Math.round(beta);
-  g.innerHTML = Math.round(gamma);
-
-    }, false);
-}else{
-    document.querySelector('body').innerHTML = '你的瀏覽器不支援喔';
-}
-       function dopass()
-       {
-          var the_data={
-               the_alpha:Math.round(alpha),the_beta:Math.round(beta),the_gamma:Math.round(gamma),
-           };
-           //console.log('do dopass');
-        socket.emit('orient',the_data);
-       }
+        function dopass()
+        {
+            let orients=
+            {
+                type:'orient',
+                value:id+','+Math.round(alpha)+','+Math.round(beta)+','+Math.round(gamma),
+            }
+            if(id!=999)
+            {
+                ws.send(JSON.stringify(orients));
+            }
+        }
     </script>
     
     <div id="date"></div>
@@ -62,6 +72,7 @@
     alpha:<span id="alpha"></span><br/>
 beta:<span id="beta"></span><br/>
 gamma:<span id="gamma"></span><br/>
+
 
   </body>
 </html>
